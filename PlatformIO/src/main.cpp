@@ -2,7 +2,7 @@
 
 #define SSR_PIN 33  // Solid State Relay Pin
 
-// IMPORTANT: You need to set your SPI pins and display driver in User_Setup.h in the TFT_eSPI library folder
+// IMPORTANT: You need to set your SPI pins and display driver. In PlatformIO, you can do this in the platformio.ini file. For Arduino IDE, you need to do it in User_Setup.h in the TFT_eSPI library folder
 
 //  #########################################################################
 //  ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
