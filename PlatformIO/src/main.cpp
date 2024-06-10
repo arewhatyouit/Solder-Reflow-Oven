@@ -1,32 +1,18 @@
 #include <Arduino.h>
 
-#define SSR_PIN 33  // Solid State Relay Pin
-
-// IMPORTANT: You need to set your SPI pins and display driver. In PlatformIO, you can do this in the platformio.ini file. For Arduino IDE, you need to do it in User_Setup.h in the TFT_eSPI library folder
-
-//  #########################################################################
-//  ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
-//  ######################################################################### 
-#include <TFT_eSPI.h> // Add TFT_eSPI by Bodmer to library
-#include <SPI.h>
-
-TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
-
-#include "Free_Fonts.h" // Include the header file attached to this sketch
-
-#include <stdint.h>
+#define SSR_PIN 32  // Solid State Relay Pin
 
 // Using a display with a different touch chip is easy, just set up your touch as you would normally and replace the next 3 lines with the calls you use to get X, Y and the interrupt pin you are using (that tells you the screen was pressed - take note whether it gets pulled HIGH or LOW because then you might have to change the if statements below i.e. if(digitalRead(INT_N_PIN) != 1)). Then you can uncomment all references to the FT6336U I am using. Also, note below, I switched the x/y to get the proper portrait/landscape orientation
 #define GET_X_COORDINATE ft6336u.read_touch1_y()
 #define GET_Y_COORDINATE ft6336u.read_touch1_x()
-#define INT_N_PIN 25
+#define INT_N_PIN 26
 
 // You also need to set up the X & Y resolution for your touch screen (the value it returns for X and Y).
 // The touch mapping can't usually be rotated and is absolute. Change min/max to invert planes. 
-#define TS_MINX 0
-#define TS_MINY 320
-#define TS_MAXX 480
-#define TS_MAXY 0
+#define TS_MINX 480
+#define TS_MINY 0
+#define TS_MAXX 0
+#define TS_MAXY 320
 
 // You can also use your own thermocouple amp. Just replace the line below with the call you use to get the temperature. Mine returns a float/double in Celsius. If you are getting anything else, add code at the actual call below in the sketch to convert it into C. Note that some amps need to be queried first before they are ready to return the temp. The 31856 in the original code, had a maxthermo.conversionComplete() call that would wait until it said it was ready before returning a value. You will need to add that below if needed. But the READ_THERMOCOUPLE call occurs only once in this sketch. Then you can remove all reference to my amp MCP9600
 #define READ_THERMOCOUPLE mcp.readThermocouple()
@@ -38,6 +24,18 @@ TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 #define I2C_ADDRESS (0x67)
 
+#include "Free_Fonts.h" // Include the header file attached to this sketch
+
+// IMPORTANT: You need to set your SPI pins and display driver. In PlatformIO, you can do this in the platformio.ini file. For Arduino IDE, you need to do it in User_Setup.h in the TFT_eSPI library folder
+
+//  #########################################################################
+//  ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
+//  ######################################################################### 
+#include <TFT_eSPI.h> // Add TFT_eSPI by Bodmer to library
+#include <SPI.h>
+
+TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
+#include <stdint.h>
 Adafruit_MCP9600 mcp;
 
 //Touch includes
@@ -47,7 +45,7 @@ Adafruit_MCP9600 mcp;
 #define I2C_SDA 21
 #define I2C_SCL 22
 
-#define RST_N_PIN 26
+#define RST_N_PIN 27
 // Touch library stuff
 FT6336U ft6336u(I2C_SDA, I2C_SCL, RST_N_PIN, INT_N_PIN);  // For some Arduinos for some reason, creating this instance is only allowed with 2 arguments, using this: FT6336U ft6336u(RST_N_PIN, INT_N_PIN);
 
@@ -113,7 +111,7 @@ void setup() {
   delay(100);
   //tft.begin();  // For original code display
   tft.init();           // Init ST7789 320x240
-  tft.setRotation(1);
+  tft.setRotation(3);
   tft.fillScreen(TFT_BLACK);
   tft.setCursor(0,0);
   tft.setTextSize(1);
