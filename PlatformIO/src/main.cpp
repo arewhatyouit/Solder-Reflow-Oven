@@ -82,12 +82,10 @@ int myFunction(int, int);
 void printState();
 void drawGrid();
 void drawButton(int x, int y, int w, int h, uint16_t backgroundColor, uint16_t textColor, String text);
-void centerText(int x, int y, int w, int h, uint16_t textColor, String text);
-void centerText(int x, int y, int w, int h, int justification, uint16_t textColor, String text);
-void centerText(int x, int y, int w, int h, int justification, uint16_t textColor, uint16_t bgTextColor, String text);
+void writeText(int x, int y, int w, int h, int justification, uint16_t textColor, uint16_t bgTextColor, String text, int8_t xOffset = 0, bool fullLinePadding = false);
 void drawSetupMenu();
 void drawReflowMenu();
-void drawEditMenu(String stage);
+void drawEditMenu(String stage, uint16_t bgColor);
 int getGridCellX();
 int getGridCellY();
 String formatTime(unsigned long milliseconds);
@@ -209,25 +207,28 @@ void loop() {
             editingPreheat = true;
             tft.fillScreen(preheatColor);
             Serial.println("Edit Preheat Menu");
-            drawEditMenu("Preheat");
-            centerText(1,0,2,1,2,TFT_WHITE,String(int(preheatTemp)));
-            centerText(4,0,2,1,2,TFT_WHITE, formatTime(preheatTime));
+            drawEditMenu("Preheat", preheatColor);
+            String preheatTempString = String(int(preheatTemp)) + " C";
+            writeText(1,0,2,1,6,TFT_WHITE, preheatColor, preheatTempString);
+            writeText(4,0,2,1,6,TFT_WHITE, preheatColor, formatTime(preheatTime));
           }
           else if(setupMenuXPos > 3 ){// Somwhere within the reflow zone
             editingReflow = true;
             tft.fillScreen(reflowColor);
             Serial.println("Edit Reflow Menu");
-            drawEditMenu("Reflow");
-            centerText(1,0,2,1, 2,TFT_WHITE,String(int(reflowTemp)));
-            centerText(4,0,2,1,2,TFT_WHITE, formatTime(reflowTime));
+            drawEditMenu("Reflow", reflowColor);
+            String reflowTempString = String(int(reflowTemp)) + " C";
+            writeText(1,0,2,1, 6,TFT_WHITE, reflowColor, reflowTempString);
+            writeText(4,0,2,1,6,TFT_WHITE, reflowColor, formatTime(reflowTime));
           }
           else{ // Somwhere within the soak zone
             editingSoak = true;
             tft.fillScreen(soakColor);
             Serial.println("Edit Soak Menu");
-            drawEditMenu("Soak");
-            centerText(1,0,2,1,2, TFT_WHITE,String(int(soakTemp)));
-            centerText(4,0,2,1,2, TFT_WHITE, formatTime(soakTime));
+            drawEditMenu("Soak", soakColor);
+            String soakTempString = String(int(soakTemp)) + " C";
+            writeText(1,0,2,1,6, TFT_WHITE, soakColor, soakTempString);
+            writeText(4,0,2,1,6, TFT_WHITE, soakColor, formatTime(soakTime));
           }
           while(editMenu){// Stay in this loop until the save button is pressed
             //touchpoint = ts.getPoint();
@@ -243,19 +244,22 @@ void loop() {
                     if(editingPreheat){
                       if(preheatTemp < 300) {
                         preheatTemp += 10;
-                        centerText(1,0,2,1,2,TFT_WHITE, preheatColor, String(int(preheatTemp)));                        
+                        String preheatTempString = String(int(preheatTemp)) + " C";
+                        writeText(1,0,2,1,6,TFT_WHITE, preheatColor, preheatTempString);                       
                       }
                     }
                     if(editingSoak){
                       if(soakTemp < 300) {
                         soakTemp += 10;
-                        centerText(1,0,2,1,2, TFT_WHITE, soakColor, String(int(soakTemp)));                        
+                        String soakTempString = String(int(soakTemp)) + " C";
+                        writeText(1,0,2,1,6, TFT_WHITE, soakColor, soakTempString);                       
                       }
                     }
                     if(editingReflow){
                       if(reflowTemp < 300) {
                         reflowTemp += 10;
-                        centerText(1,0,2,1, 2, TFT_WHITE, reflowColor, String(int(reflowTemp)));                        
+                        String reflowTempString = String(int(reflowTemp)) + " C";
+                        writeText(1,0,2,1, 6,TFT_WHITE, reflowColor, reflowTempString);                       
                       }
                     }
                   }
@@ -265,19 +269,19 @@ void loop() {
                     if(editingPreheat){
                       if(preheatTime < 300000) {
                         preheatTime += 10000;
-                        centerText(4,0,2,1, 2, TFT_WHITE, preheatColor, formatTime(preheatTime));                        
+                        writeText(4,0,2,1, 6, TFT_WHITE, preheatColor, formatTime(preheatTime));                        
                       }
                     }
                     if(editingSoak){
                       if(soakTime < 300000) {
                         soakTime += 10000;
-                        centerText(4,0,2,1, 2, TFT_WHITE, soakColor, formatTime(soakTime));                        
+                        writeText(4,0,2,1, 6, TFT_WHITE, soakColor, formatTime(soakTime));                        
                       }
                     }
                     if(editingReflow){
                       if(reflowTime < 300000) {
                         reflowTime += 10000;
-                        centerText(4,0,2,1, 2, TFT_WHITE, reflowColor, formatTime(reflowTime));                        
+                        writeText(4,0,2,1, 6, TFT_WHITE, reflowColor, formatTime(reflowTime));                        
                       }
                     }
                   }
@@ -289,19 +293,23 @@ void loop() {
                     if(editingPreheat){
                       if(preheatTemp > 100) {
                         preheatTemp -= 10;
-                        centerText(1,0,2,1, 2, TFT_WHITE, preheatColor, String(int(preheatTemp)));                        
+                        String preheatTempString = String(int(preheatTemp)) + " C";
+                        writeText(1,0,2,1,6,TFT_WHITE, preheatColor, preheatTempString);                         
                       }
                     }
                     if(editingSoak){
                       if(soakTemp > 100) {
                         soakTemp -= 10;
-                        centerText(1,0,2,1, 2, TFT_WHITE, soakColor, String(int(soakTemp)));                        
+                        String soakTempString = String(int(soakTemp)) + " C";
+                        writeText(1,0,2,1,6, TFT_WHITE, soakColor, soakTempString);                     
                       }
                     }
                     if(editingReflow){
                       if(reflowTemp > 100) {
                         reflowTemp -= 10;
-                        centerText(1,0,2,1, 2, TFT_WHITE, reflowColor, String(int(reflowTemp)));                        
+                        String reflowTempString = String(int(reflowTemp)) + " C";
+                        writeText(1,0,2,1, 6,TFT_WHITE, reflowColor, reflowTempString);
+                        //writeText(1,0,2,1, 6, TFT_WHITE, reflowColor, String(int(reflowTemp)));                        
                       }
                     }
                   }
@@ -311,19 +319,19 @@ void loop() {
                     if(editingPreheat){
                       if(preheatTime > 30000) {
                         preheatTime -= 10000;
-                        centerText(4,0,2,1, 2, TFT_WHITE, preheatColor, formatTime(preheatTime));                        
+                        writeText(4,0,2,1, 6, TFT_WHITE, preheatColor, formatTime(preheatTime));                        
                       }
                     }
                     else if(editingSoak){
                       if(soakTime > 30000) {
                         soakTime -= 10000;
-                        centerText(4,0,2,1, 2, TFT_WHITE, soakColor, formatTime(soakTime));                        
+                        writeText(4,0,2,1, 6, TFT_WHITE, soakColor, formatTime(soakTime));                        
                       }
                     }
                     else if(editingReflow){
                       if(reflowTime > 30000) {
                         reflowTime -= 10000;
-                        centerText(4,0,2,1, 2, TFT_WHITE, reflowColor, formatTime(reflowTime));                        
+                        writeText(4,0,2,1, 6, TFT_WHITE, reflowColor, formatTime(reflowTime));                        
                       }
                     }
                   }
@@ -486,8 +494,9 @@ void printState(){
   String time = formatTime(timeSinceReflowStarted);
   Serial.print("Current time: "); Serial.print(time); Serial.print("\t");
   //tft.fillRoundRect(4*gridSize+2, 3*gridSize+2, 2*gridSize-4, gridSize-4, 10, TFT_BLACK);
-    centerText(4,3,2,1,0,TFT_WHITE, TFT_BLACK, time);
-  centerText(4,3,2,1,2,TFT_WHITE, TFT_BLACK, String(Input));
+    writeText(4,3,2,1,1,TFT_WHITE, TFT_BLACK, time, 10, true);
+  String tempReading = String(Input) + " C";
+  writeText(4,3,2,1,3,TFT_WHITE, TFT_BLACK, tempReading, 10, true);
   String currentState;
   if(preheating){
     currentState = "Preheating";
@@ -507,7 +516,7 @@ void printState(){
     tft.setFreeFont(FSB12);
     newState = false;
     tft.fillRoundRect(1*gridSize+25, 0*gridSize+2, 3*gridSize-4, gridSize-20, 10, TFT_BLACK);
-    centerText(2,0,2,1, 0, TFT_WHITE,currentState);
+    writeText(2,0,2,1, 4, TFT_WHITE, TFT_BLACK, currentState);
   }
 }
 
@@ -561,37 +570,12 @@ void drawButton(int x, int y, int w, int h, uint16_t backgroundColor, uint16_t t
   }
 }
 
-void centerText(int x, int y, int w, int h, uint16_t textColor, String text){
-  //tft.setFont(&FreeMonoBold12pt7b);
-  tft.setFreeFont(FSB18);
-  int16_t textBoundX, textBoundY;
-  uint16_t textBoundWidth, textBoundHeight;
-  //tft.getTextBounds(text,0,0,&textBoundX, &textBoundY, &textBoundWidth, &textBoundHeight);
-  tft.setCursor(x*gridSize+(w*gridSize-tft.textWidth(text))/2, y*gridSize+(h*gridSize+tft.fontHeight())/2);
-  tft.setTextColor(textColor); tft.print(text);
-}
-
-void centerText(int x, int y, int w, int h, int justification, uint16_t textColor, String text){
-  tft.setFreeFont(FSB18);
-  int16_t textBoundX, textBoundY;
-  uint16_t textBoundWidth, textBoundHeight;
-  textBoundWidth = tft.textWidth(text);
-  textBoundHeight = tft.fontHeight();
-  switch(justification){
-    case 0: //top justified
-      tft.setCursor(x*gridSize+(w*gridSize-textBoundWidth)/2, (y*gridSize+(h*gridSize/2-textBoundHeight)/2+textBoundHeight)-10);
-      break;
-    case 1: //center justified
-      tft.setCursor(x*gridSize+(w*gridSize-textBoundWidth)/2, y*gridSize+(h*gridSize+textBoundHeight)/2);
-      break;
-    case 2: //bottom justified
-      tft.setCursor(x*gridSize+(w*gridSize-textBoundWidth)/2, (y*gridSize+gridSize-(h*gridSize/2-textBoundHeight)/2)-10);
-      break;
-  }
-  tft.setTextColor(textColor); tft.print(text);
-}
-
-void centerText(int x, int y, int w, int h, int justification, uint16_t textColor, uint16_t bgTextColor, String text){
+uint8_t margin = 4;
+// justification runs:
+// 1 4 7
+// 2 5 8
+// 3 6 9
+void writeText(int x, int y, int w, int h, int justification, uint16_t textColor, uint16_t bgTextColor, String text, int8_t xOffset, bool fullLinePadding){
   tft.setFreeFont(FSB18);
   int16_t textBoundX, textBoundY;
   uint16_t textBoundWidth, textBoundHeight;
@@ -599,50 +583,99 @@ void centerText(int x, int y, int w, int h, int justification, uint16_t textColo
   textBoundHeight = tft.fontHeight();
     uint32_t xPos, yPos;
   switch(justification){
-    case 0: //top justified
-      xPos = x*gridSize+(w*gridSize-textBoundWidth)/2;
-      yPos = (y*gridSize+(h*gridSize/2-textBoundHeight)/2+textBoundHeight)-10;
+    case 1: //top left
+      xPos = x*gridSize + margin + xOffset;
+      yPos = y*gridSize + margin;
+      tft.setTextDatum(TL_DATUM);
       break;
-    case 1: //center justified
-      xPos = x*gridSize+(w*gridSize-textBoundWidth)/2;
-      yPos = y*gridSize+(h*gridSize+textBoundHeight)/2;
+    case 2: //center left
+      xPos = x*gridSize + margin + xOffset;
+      yPos = y*gridSize + ((h*gridSize)/2);
+      tft.setTextDatum(CL_DATUM);
       break;
-    case 2: //bottom justified
-      xPos = x*gridSize+(w*gridSize-textBoundWidth)/2;
-      yPos = (y*gridSize+gridSize-(h*gridSize/2-textBoundHeight)/2)-10;
+    case 3: //bottom left
+      xPos = x*gridSize + margin + xOffset;
+      yPos = (y*gridSize) + (h * gridSize) - margin;
+      tft.setTextDatum(BL_DATUM);
+      break;
+    case 4: 
+      xPos = x*gridSize + ((w * gridSize) / 2) + margin + xOffset;
+      yPos = y*gridSize + margin;
+      tft.setTextDatum(TC_DATUM);
+      break;
+    case 5: 
+      xPos = x*gridSize + ((w * gridSize) / 2) + xOffset;
+      yPos = y*gridSize + ((h*gridSize)/2);
+      tft.setTextDatum(CC_DATUM);
+      break;
+    case 6: 
+      xPos = x*gridSize + ((w * gridSize) / 2) + margin + xOffset;
+      yPos = (y*gridSize) + (h * gridSize) - margin;
+      tft.setTextDatum(BC_DATUM);
+      break;
+    case 7: 
+      xPos = (x*gridSize) + (w * gridSize) - margin - xOffset;
+      yPos = y*gridSize + margin;
+      tft.setTextDatum(TR_DATUM);
+      break;
+    case 8: 
+      xPos = (x*gridSize) + (w * gridSize) - margin - xOffset;
+      yPos = y*gridSize + ((h*gridSize)/2);
+      tft.setTextDatum(CR_DATUM);
+      break;
+    case 9: 
+      xPos = (x*gridSize) + (w * gridSize) - margin - xOffset;
+      yPos = (y*gridSize) + (h * gridSize) - margin;
+      tft.setTextDatum(BR_DATUM);
       break;
   }
 
+  if (fullLinePadding == true) {
+    tft.setTextPadding((w * gridSize) - (margin * 2) - xOffset);
+  }
   tft.setTextColor(textColor, bgTextColor); 
-  uint16_t padding = tft.textWidth("00:00");
-  tft.setTextPadding(padding);
-  tft.setTextDatum(L_BASELINE);
+  //
+  //
+  //tft.setTextDatum(L_BASELINE);
   tft.drawString(text, xPos, yPos);
 }
 
 void drawSetupMenu(){
   tft.setFreeFont(FSB12);
   drawButton(0,0,2,3, preheatColor, TFT_WHITE, "");                  drawButton(2,0,2,3, soakColor, TFT_WHITE, "");                 drawButton(4,0,2,3, reflowColor, TFT_WHITE, "");
-  centerText(0,0,2,1, TFT_WHITE, "Preheat");                         centerText(2,0,2,1, TFT_WHITE, "Soak");                        centerText(4,0,2,1, TFT_WHITE, "Reflow");
-  centerText(0,1,2,1,0, TFT_WHITE, String(int(preheatTemp)) + " C");        centerText(2,1,2,1,0, TFT_WHITE, String(int(soakTemp)) + " C");       centerText(4,1,2,1,0, TFT_WHITE, String(int(reflowTemp)) + " C");
-  centerText(0,1,2,1,2, TFT_WHITE, String(formatTime(preheatTime))); centerText(2,1,2,1,2, TFT_WHITE, String(formatTime(soakTime)));centerText(4,1,2,1,2, TFT_WHITE, String(formatTime(reflowTime)));
-  centerText(0,2,2,1,0, TFT_WHITE, "min"); centerText(2,2,2,1,0, TFT_WHITE, "min"); centerText(4,2,2,1,0, TFT_WHITE, "min");
+  writeText(0,0,2,1, 5, TFT_WHITE, preheatColor,  "Preheat");                         
+  writeText(2,0,2,1, 5, TFT_WHITE, soakColor, "Soak");                        
+  writeText(4,0,2,1, 5, TFT_WHITE, reflowColor, "Reflow");
+  writeText(0,1,2,1,4, TFT_WHITE, preheatColor, String(int(preheatTemp)) + " C");        
+  writeText(2,1,2,1,4, TFT_WHITE, soakColor, String(int(soakTemp)) + " C");       
+  writeText(4,1,2,1,4, TFT_WHITE, reflowColor, String(int(reflowTemp)) + " C");
+  writeText(0,1,2,1,6, TFT_WHITE, preheatColor, String(formatTime(preheatTime))); 
+  writeText(2,1,2,1,6, TFT_WHITE, soakColor, String(formatTime(soakTime)));
+  writeText(4,1,2,1,6, TFT_WHITE, reflowColor, String(formatTime(reflowTime)));
+  writeText(0,2,2,1,4, TFT_WHITE, preheatColor, "min"); 
+  writeText(2,2,2,1,4, TFT_WHITE, soakColor, "min"); 
+  writeText(4,2,2,1,4, TFT_WHITE, reflowColor, "min");
   drawButton(0,3,6,1, TFT_GREEN, TFT_WHITE, "Confirm");
-  tft.drawCircle(95,87,4,TFT_WHITE); tft.drawCircle(255,87,4,TFT_WHITE); tft.drawCircle(415,87,4,TFT_WHITE); // These are the degree circles. They are absolute so need to change to scale. The x axis does not correspond perfectly to 2/3 for some reason
+  //tft.drawCircle(95,87,4,TFT_WHITE); tft.drawCircle(255,87,4,TFT_WHITE); tft.drawCircle(415,87,4,TFT_WHITE); // These are the degree circles. They are absolute so need to change to scale. The x axis does not correspond perfectly to 2/3 for some reason
 }
 
 void drawReflowMenu(){
   tft.setFreeFont(FSB12);
   drawGrid();
-  centerText(3,3,1,1,0, TFT_WHITE, "Time: ");
-  centerText(3,3,1,1,2, TFT_WHITE, "Temp: ");
+  writeText(3,3,1,1,7, TFT_WHITE, TFT_BLACK, "Time: ");
+  writeText(3,3,1,1,9, TFT_WHITE, TFT_BLACK, "Temp: ");
   //drawButton(0,3,2,1, TFT_RED, TFT_WHITE, "Stop"); drawButton(0,3,2,1, TFT_RED, TFT_WHITE, "Start");
 }
 
-void drawEditMenu(String stage){
+void drawEditMenu(String stage, uint16_t bgColor){
   tft.setFreeFont(FSB12);
-  centerText(0,0,2,1,0, TFT_WHITE, stage); centerText(0,0,2,1,2, TFT_WHITE, "Temp:   "); drawButton(0,1,3,1, TFT_WHITE, TFT_BLACK, "UP_ARROW"); drawButton(0,2,3,1, TFT_WHITE, TFT_BLACK, "DOWN_ARROW");
-  centerText(3,0,2,1,0, TFT_WHITE, stage); centerText(3,0,2,1, 2, TFT_WHITE, "Time:   "); drawButton(3,1,3,1, TFT_WHITE, TFT_BLACK, "UP_ARROW"); drawButton(3,2,3,1, TFT_WHITE, TFT_BLACK, "DOWN_ARROW");
+  writeText(0,0,6,1,4, TFT_WHITE, bgColor, stage); 
+  writeText(0,0,2,1,3, TFT_WHITE, bgColor, "Temp:", 10); 
+  drawButton(0,1,3,1, TFT_WHITE, TFT_BLACK, "UP_ARROW"); 
+  drawButton(0,2,3,1, TFT_WHITE, TFT_BLACK, "DOWN_ARROW");
+  writeText(3,0,2,1, 3, TFT_WHITE, bgColor, "Time:", 10); 
+  drawButton(3,1,3,1, TFT_WHITE, TFT_BLACK, "UP_ARROW"); 
+  drawButton(3,2,3,1, TFT_WHITE, TFT_BLACK, "DOWN_ARROW");
   drawButton(0,3,6,1, TFT_GREEN, TFT_WHITE, "Save");
 }
 
@@ -688,7 +721,7 @@ String formatTime(unsigned long milliseconds) {
   unsigned int seconds = totalSeconds % 60;
 
   // Format the time as a string with a leading zero if necessary
-  String formattedTime = /* (minutes < 10 ? "0" : "") + */ String(minutes) + ":" + (seconds < 10 ? "0" : "") + String(seconds);
+  String formattedTime = (minutes < 10 ? "0" : "") + String(minutes) + ":" + (seconds < 10 ? "0" : "") + String(seconds);
 
   return formattedTime;
 }
