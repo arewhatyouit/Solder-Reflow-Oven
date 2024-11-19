@@ -3,9 +3,15 @@
 #define SSR_PIN 32  // Solid State Relay Pin
 
 // Using a display with a different touch chip is easy, just set up your touch as you would normally and replace the next 3 lines with the calls you use to get X, Y and the interrupt pin you are using (that tells you the screen was pressed - take note whether it gets pulled HIGH or LOW because then you might have to change the if statements below i.e. if(digitalRead(INT_N_PIN) != 1)). Then you can uncomment all references to the FT6336U I am using. Also, note below, I switched the x/y to get the proper portrait/landscape orientation
-#define GET_X_COORDINATE ft6336u.read_touch1_y()
-#define GET_Y_COORDINATE ft6336u.read_touch1_x()
-#define INT_N_PIN 26
+// #define GET_X_COORDINATE ft6336u.read_touch1_y()
+#define GET_X_COORDINATE ts.getPoint().y
+// #define GET_Y_COORDINATE ft6336u.read_touch1_x()
+#define GET_Y_COORDINATE ts.getPoint().x
+
+// #define INT_N_PIN 5
+#define CS_PIN  15
+
+// MOSI=36, MISO=37, SCK=18
 
 // You also need to set up the X & Y resolution for your touch screen (the value it returns for X and Y).
 // The touch mapping can't usually be rotated and is absolute. Change min/max to invert planes. 
@@ -39,15 +45,20 @@ TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 Adafruit_MCP9600 mcp;
 
 //Touch includes
-#include "FT6336U.h"  // FocalTech FT6336U (Self-Capacitive Touch Panel Controller) library for Arduino. by aselectroworks
+// #include "FT6336U.h"  // FocalTech FT6336U (Self-Capacitive Touch Panel Controller) library for Arduino. by aselectroworks
+
+#include <XPT2046_Touchscreen.h>
 
 // Use default I2C pins for you mcu
 #define I2C_SDA 21
 #define I2C_SCL 22
 
-#define RST_N_PIN 27
+// #define RST_N_PIN 27
+#define TIRQ_PIN -1 // Or -1 if unused
+
 // Touch library stuff
-FT6336U ft6336u(I2C_SDA, I2C_SCL, RST_N_PIN, INT_N_PIN);  // For some Arduinos for some reason, creating this instance is only allowed with 2 arguments, using this: FT6336U ft6336u(RST_N_PIN, INT_N_PIN);
+XPT2046_Touchscreen ts( CS_PIN, TIRQ_PIN);
+// FT6336U ft6336u( I2C_SDA, I2C_SCL, TIRQ_PIN, CS_PIN);  // For some Arduinos for some reason, creating this instance is only allowed with 2 arguments, using this: FT6336U ft6336u(RST_N_PIN, INT_N_PIN);
 
 const int displayWidth = 480, displayHeight = 320;
 const int gridSize = 80;  // Our 320x240 display is 2/3 the size of the 480x320
@@ -109,12 +120,22 @@ void setup() {
   delay(100);
   //tft.begin();  // For original code display
   tft.init();           // Init ST7789 320x240
-  tft.setRotation(3);
-  tft.fillScreen(TFT_BLACK);
-  tft.setCursor(0,0);
-  tft.setTextSize(1);
+  tft.setRotation(1);
+  tft.fillScreen(TFT_GREEN);
+  tft.setCursor(0,4);
+  tft.setTextSize(3);
+  tft.setTextColor(TFT_BLACK);
+  tft.println ("Hello World!");
 
-  ft6336u.begin();
+  ts.begin();
+
+  if (ts.begin()) {
+    Serial.println("Touchscreen initialized!");
+  } else {
+    Serial.println("Touchscreen initialization failed!");
+  }
+
+  ts.setRotation(1);
 
     if (! mcp.begin(I2C_ADDRESS)) {
         Serial.println("Sensor not found. Check wiring!");
@@ -179,6 +200,21 @@ void setup() {
 
 void loop() {
 
+  if (ts.touched()) {
+    TS_Point p = ts.getPoint(); // Get touch coordinates
+    
+    // Optional: Map raw coordinates to screen size
+    uint16_t x = map(p.x, 0, 4095, 0, 320); // Adjust range based on your touch controller
+    uint16_t y = map(p.y, 0, 4095, 0, 480); // Adjust range based on your screen resolution
+
+    Serial.print("Touched at: X = ");
+    Serial.print(x);
+    Serial.print(", Y = ");
+    Serial.println(y);
+    
+    delay(100); // Delay for readability
+  }
+
   digitalWrite(SSR_PIN,LOW);
   // ///* Setup Menu *///
   tft.fillScreen(TFT_BLACK);
@@ -195,7 +231,7 @@ void loop() {
       //     Serial.print("FT6336U Touch Event/ID 1: ("); // Returns 1 when the screen is pressed, otherwise returns 0
       // Serial.print(ft6336u.read_touch1_event()); Serial.print(" / "); Serial.print(ft6336u.read_touch1_id()); Serial.println(")");
     //touchpoint = ts.getPoint();
-    if(digitalRead(INT_N_PIN) != 1){
+    if(digitalRead(CS_PIN) != 1){
       if (millis() - touchLastMillis > debounceDelay) {
         Serial.println("touched");
         int setupMenuXPos = getGridCellX(), setupMenuYPos = getGridCellY();
@@ -232,7 +268,7 @@ void loop() {
           }
           while(editMenu){// Stay in this loop until the save button is pressed
             //touchpoint = ts.getPoint();
-            if(digitalRead(INT_N_PIN) != 1){
+            if(digitalRead(CS_PIN) != 1){
               if (millis() - touchLastMillis > debounceDelay) {
                 Serial.println("touched");
                 int editMenuXPos = getGridCellX(), editMenuYPos = getGridCellY();
@@ -367,7 +403,7 @@ void loop() {
   bool start = false;
   while(!start){
     //touchpoint = ts.getPoint();
-    if(digitalRead(INT_N_PIN) != 1){
+    if(digitalRead(CS_PIN) != 1){
       if (millis() - touchLastMillis > debounceDelay) {
         if(getGridCellX() <2 && getGridCellY() == 3){
           start = true;
@@ -458,7 +494,7 @@ void loop() {
       Setpoint = preheatTemp;
     }
     //touchpoint = ts.getPoint();
-    if(digitalRead(INT_N_PIN) != 1){
+    if(digitalRead(CS_PIN) != 1){
       if (millis() - touchLastMillis > debounceDelay) {
         if(getGridCellX() < 2 && getGridCellY() == 3){
           Serial.println("exit at stop button");
@@ -473,7 +509,7 @@ void loop() {
   bool done = false;
   while(!done){
     //touchpoint = ts.getPoint();
-    if(digitalRead(INT_N_PIN) != 1){
+    if(digitalRead(CS_PIN) != 1){
       if (millis() - touchLastMillis > debounceDelay) {
         if(getGridCellX() < 2 && getGridCellY() == 3){
           done = true;
